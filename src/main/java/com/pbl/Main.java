@@ -22,6 +22,9 @@ public class Main {
 
         startMemorySampler();
 
+        System.out.printf("%-8s %-10s %-12s %-12s %-10s %-12s %-10s%n",
+        "threads", "time_ms", "negative", "positive", "zero", "total", "peak_MB");
+        
         for (int threads : numberOfCheckedThreads) {
             long[][] counts = new long[threads][3]; // per thread: negative, positive, zero
             Thread[] workers = new Thread[threads];
@@ -48,8 +51,8 @@ public class Main {
                 pos += c[1];
                 zero += c[2];
             }
-            System.out.printf("threads=%d  time=%.3f s  peak heap=%d MB  neg=%d pos=%d zero=%d total=%d%n",
-                    threads, seconds, peak >> 20, neg, pos, zero, neg + pos + zero);
+            System.out.printf("%-8d %-10.1f %-12d %-12d %-10d %-12d %-10.1f%n",
+                threads, seconds * 1000, neg, pos, zero, neg + pos + zero, peak / (1024.0 * 1024.0));
         }
     }
 
