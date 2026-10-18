@@ -5,7 +5,7 @@ import java.nio.file.Files;
 
 // Task 2: reads every file from a folder and counts negative/positive/zero numbers
 // with 1, 2 and 4 threads, then prints the results so they can be compared.
-public class Main {
+public class Task2 {
     static final String DIR = "parts"; // folder with the files (the only setting)
 
     static volatile long peak; // peak heap used during a run, in bytes
