@@ -6,11 +6,9 @@ import java.nio.file.Files;
 // Task 2: reads every file from a folder and counts negative/positive/zero numbers
 // with 1, 2 and 4 threads, then prints the results so they can be compared.
 public class Task2 {
-    static final String DIR = "parts"; // folder with the files (the only setting)
+    static final String DIR = "E:\\parts"; // folder with the files (the only setting)
 
     static volatile long peak; // peak heap used during a run, in bytes
-
-    static int[] numberOfCheckedThreads = new int[] {1, 2, 4};
 
     public static void main(String[] args) throws Exception {
         File[] files = new File(DIR).listFiles((dir, name) -> name.endsWith(".txt"));
@@ -24,6 +22,8 @@ public class Task2 {
 
         System.out.printf("%-8s %-10s %-12s %-12s %-10s %-12s %-10s%n",
         "threads", "time_ms", "negative", "positive", "zero", "total", "peak_MB");
+
+        int[] numberOfCheckedThreads = { Integer.parseInt(args[0]) };
         
         for (int threads : numberOfCheckedThreads) {
             long[][] counts = new long[threads][3]; // per thread: negative, positive, zero
