@@ -17,7 +17,7 @@ public class Task1c {
     private static final int BATCH_SIZE = 10_000;
     private static final int QUEUE_CAPACITY = 100;
 
-    private static final String[] POISON = new String[0]; // "the queue is closed"
+    private static final String[] FINISH = new String[0]; // the queue is closed
 
     public static void main(String[] args) throws Exception {
         System.out.printf("%-8s %-10s %-12s %-12s %-10s %-12s %-10s %-6s%n",
@@ -49,7 +49,7 @@ public class Task1c {
     private static long[] run(int n) throws InterruptedException {
         BlockingQueue<String[]> queue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
 
-        // One slot per worker: nobody writes where anybody else writes.
+        // One slot per worker: nobody writes where anybody else writes
         long[] neg = new long[n];
         long[] pos = new long[n];
         long[] zero = new long[n];
@@ -68,7 +68,6 @@ public class Task1c {
         reader.join();
         for (Thread w : workers) w.join();
 
-        // safe only after join()
         long sn = 0, sp = 0, sz = 0;
         for (int i = 0; i < n; i++) {
             sn += neg[i];
@@ -78,7 +77,6 @@ public class Task1c {
         return new long[]{sn, sp, sz};
     }
 
-    // The producer: the only thread that reads the file.
     private static void readFile(BlockingQueue<String[]> queue, int workers) {
         try (BufferedReader reader = new BufferedReader(new FileReader(FILE), 1 << 16)) {
             String[] batch = new String[BATCH_SIZE];
@@ -97,13 +95,13 @@ public class Task1c {
                 queue.put(Arrays.copyOf(batch, count)); // the last, shorter batch
 
             for (int i = 0; i < workers; i++)
-                queue.put(POISON);                    // close: one stop signal per worker
+                queue.put(FINISH);                    // close: one stop signal per worker
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-    // A consumer: takes batches until it takes POISON.
+    // A consumer: takes batches until it takes FINISH object
     private static void work(BlockingQueue<String[]> queue,
                              long[] neg, long[] pos, long[] zero, int index) {
         long negative = 0, positive = 0, zeros = 0; // local counters
@@ -111,7 +109,7 @@ public class Task1c {
         try {
             while (true) {
                 String[] batch = queue.take();        // waits while the queue is empty
-                if (batch == POISON) break;
+                if (batch == FINISH) break;
 
                 for (String line : batch) {
                     if (line.isEmpty()) continue;
@@ -125,12 +123,11 @@ public class Task1c {
             throw new RuntimeException(e);
         }
 
-        neg[index] = negative;                        // written once, into our own slot
+        neg[index] = negative;
         pos[index] = positive;
         zero[index] = zeros;
     }
 
-    // peak memory
     private static void resetPeakMemory() {
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
             if (pool.getType() == MemoryType.HEAP) pool.resetPeakUsage();

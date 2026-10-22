@@ -24,7 +24,7 @@ public class Task1a {
                 "threads", "time_ms", "negative", "positive", "zero", "total", "peak_MB", "Correctness");
 
         long[] first = null; // result of the first run, all others must match it
-        for (int n = 1; n <= 64; n *= 2) {   // 1, 2, 4, ... 64
+        for (int n = 1; n <= 64; n *= 2) {
             System.gc();
             resetPeakMemory();
 
@@ -36,7 +36,10 @@ public class Task1a {
             double peakMb = peakHeapBytes() / (1024.0 * 1024.0);
             long total = r[0] + r[1] + r[2];
 
-            if (first == null) first = r;
+            if (first == null) {
+                first = r;
+            }
+
             boolean same = r[0] == first[0] && r[1] == first[1] && r[2] == first[2];
             boolean ok = same && total == EXPECTED_TOTAL;
 
@@ -47,7 +50,7 @@ public class Task1a {
 
     // Starts n threads, waits for all of them, returns : negative, positive, zero
     private static long[] count(long size, int n) throws InterruptedException {
-        // One slot per thread: nobody writes where anybody else writes.
+        // One slot per thread: nobody writes where anybody else writes
         long[] neg = new long[n];
         long[] pos = new long[n];
         long[] zero = new long[n];
@@ -65,10 +68,15 @@ public class Task1a {
                 }
             });
         }
-        for (Thread t : threads) t.start();
-        for (Thread t : threads) t.join();
 
-        // safe only after join()
+        for (Thread t : threads) {
+            t.start();
+        }
+
+        for (Thread t : threads) {
+            t.join();
+        }
+
         long sn = 0, sp = 0, sz = 0;
         for (int i = 0; i < n; i++) {
             sn += neg[i];
@@ -83,15 +91,17 @@ public class Task1a {
                                   long[] neg, long[] pos, long[] zero, int index) throws IOException {
         if (start >= end) return;
 
-        long negative = 0, positive = 0, zeros = 0; // local counters, copied to the slot at the end
+        long negative = 0;
+        long positive = 0;
+        long zeros = 0;
 
         RandomAccessFile file = new RandomAccessFile(FILE, "r");
         try {
             byte[] buf = new byte[BUFFER_SIZE];
 
             // Start one byte early to see whether 'start' is the beginning of a line.
-            long p = start > 0 ? start - 1 : 0;   // absolute position of the byte being processed
-            boolean skipping = start > 0;         // skip the tail of the previous thread's line
+            long p = start > 0 ? start - 1 : 0;
+            boolean skipping = start > 0;
             file.seek(p);
 
             boolean isNegative = false;
@@ -109,7 +119,10 @@ public class Task1a {
                     if (skipping) {
                         if (b == '\n') {
                             skipping = false;
-                            if (p + 1 >= end) { done = true; break; } // next line is not ours
+                            if (p + 1 >= end) {
+                                done = true;
+                                break;
+                            }
                         }
                         p++;
                         continue;
@@ -124,23 +137,34 @@ public class Task1a {
                         isNegative = false;
                         hasDigits = false;
                         value = 0;
-                        if (p + 1 >= end) { done = true; break; } // next line belongs to the next thread
-                    } else if (b == '-') {
+                        if (p + 1 >= end) {
+                            done = true;
+                            break;
+                        } // next line belongs to the next thread
+                    }
+                    else if (b == '-') {
                         isNegative = true;
-                    } else if (b >= '0' && b <= '9') {
+                    }
+                    else if (b >= '0' && b <= '9') {
                         hasDigits = true;
                         value = value * 10 + (b - '0');
                     }
-                    // '\r' and spaces are ignored
                     p++;
                 }
             }
 
-            // last line of the file without '\n'
             if (!done && !skipping && hasDigits) {
-                if (value == 0) zeros++;
-                else if (isNegative) negative++;
-                else positive++;
+                if (value == 0) {
+                    zeros++;
+                }
+
+                else if (isNegative) {
+                    negative++;
+                }
+
+                else {
+                    positive++;
+                }
             }
         } finally {
             file.close();
@@ -151,17 +175,20 @@ public class Task1a {
         zero[index] = zeros;
     }
 
-    // peak memory
     private static void resetPeakMemory() {
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
-            if (pool.getType() == MemoryType.HEAP) pool.resetPeakUsage();
+            if (pool.getType() == MemoryType.HEAP) {
+                pool.resetPeakUsage();
+            }
         }
     }
 
     private static long peakHeapBytes() {
         long sum = 0;
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
-            if (pool.getType() == MemoryType.HEAP) sum += pool.getPeakUsage().getUsed();
+            if (pool.getType() == MemoryType.HEAP) {
+                sum += pool.getPeakUsage().getUsed();
+            }
         }
         return sum;
     }

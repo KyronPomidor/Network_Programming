@@ -23,7 +23,6 @@ public class Task1b {
     private static void run() throws Exception {
         int threads = Runtime.getRuntime().availableProcessors();
 
-        // not measured
         int[] numbers = loadNumbers();
         int length = loadedLength;
         System.out.println("numbers loaded: " + length + ", threads: " + threads);
@@ -35,8 +34,9 @@ public class Task1b {
         // and also warms up the JIT, so the printed runs start from the same state
         long[] ref = runVersion(3, numbers, length, threads);
 
-        for (int run = 1; run <= 3; run++)
+        for (int run = 1; run <= 3; run++) {
             printRow("1 no sync, run " + run, runVersion(1, numbers, length, threads), ref);
+            }
         printRow("2 lock", runVersion(2, numbers, length, threads), ref);
         printRow("3 own counters", runVersion(3, numbers, length, threads), ref);
     }
@@ -48,13 +48,12 @@ public class Task1b {
                 name, r[3], r[0], r[1], r[2], total, ok ? "OK" : "WRONG");
     }
 
-    // Returns : negative, positive, zero, time_ms
     private static long[] runVersion(int version, int[] numbers, int length, int n) throws InterruptedException {
         sharedNeg = 0;
         sharedPos = 0;
         sharedZero = 0;
 
-        long[] neg = new long[n]; // used by version 3: one slot per thread
+        long[] neg = new long[n];
         long[] pos = new long[n];
         long[] zero = new long[n];
         Thread[] threads = new Thread[n];
@@ -124,12 +123,11 @@ public class Task1b {
         }
     }
 
-    // loading (one thread, not measured) 
     private static int loadedLength;
 
-    // Reads numbers.txt on one thread into an int[]. The real count is in loadedLength
+    // Reads numbers.txt on one thread into an int[] arr for ref
     private static int[] loadNumbers() throws IOException {
-        int[] a = new int[1 << 20];
+        int[] a = new int[BUFFER_SIZE];
         int count = 0;
 
         RandomAccessFile file = new RandomAccessFile(FILE, "r");
