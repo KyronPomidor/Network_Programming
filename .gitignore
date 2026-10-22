@@ -4,6 +4,7 @@ target/
 !**/src/test/**/target/
 .kotlin
 /parts
+numbers.txt
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
