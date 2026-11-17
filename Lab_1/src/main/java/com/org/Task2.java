@@ -1,4 +1,4 @@
-package com.pbl;
+package com.org;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -8,7 +8,7 @@ public class Task2 {
 
     static volatile long peak;
 
-    static int[] numberOfCheckedThreads = new int[] {1, 2, 4};
+    static int[] numberOfCheckedThreads = new int[] {4};
 
     public static void main(String[] args) throws Exception {
         File[] files = new File(DIR).listFiles((dir, name) -> name.endsWith(".txt"));
@@ -90,6 +90,7 @@ public class Task2 {
         Thread sampler = new Thread(() -> {
             Runtime rt = Runtime.getRuntime();
             while (true) {
+                System.gc();
                 peak = Math.max(peak, rt.totalMemory() - rt.freeMemory());
                 try {
                     Thread.sleep(5);

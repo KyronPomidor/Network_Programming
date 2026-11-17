@@ -3,7 +3,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
-/parts
+/Lab_1/parts
 
 numbers.txt
 
