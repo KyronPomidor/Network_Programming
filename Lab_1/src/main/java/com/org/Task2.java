@@ -1,14 +1,14 @@
-package com.pbl;
+package com.org;
 
 import java.io.File;
 import java.nio.file.Files;
 
-// Task 2: reads every file from a folder and counts negative/positive/zero numbers
-// with 1, 2 and 4 threads, then prints the results so they can be compared.
 public class Task2 {
-    static final String DIR = "E:\\parts"; // folder with the files (the only setting)
+    static final String DIR = "parts";
 
-    static volatile long peak; // peak heap used during a run, in bytes
+    static volatile long peak;
+
+    static int[] numberOfCheckedThreads = new int[] {4};
 
     public static void main(String[] args) throws Exception {
         File[] files = new File(DIR).listFiles((dir, name) -> name.endsWith(".txt"));
@@ -22,11 +22,9 @@ public class Task2 {
 
         System.out.printf("%-8s %-10s %-12s %-12s %-10s %-12s %-10s%n",
         "threads", "time_ms", "negative", "positive", "zero", "total", "peak_MB");
-
-        int[] numberOfCheckedThreads = { Integer.parseInt(args[0]) };
         
         for (int threads : numberOfCheckedThreads) {
-            long[][] counts = new long[threads][3]; // per thread: negative, positive, zero
+            long[][] counts = new long[threads][3];
             Thread[] workers = new Thread[threads];
             peak = 0;
 
@@ -34,7 +32,7 @@ public class Task2 {
             for (int t = 0; t < threads; t++) {
                 int id = t;
                 workers[t] = new Thread(() -> {
-                    // files are shared out evenly: thread id takes files id, id+threads, ...
+                    // files are shared out evenly: thread id takes files id, id+threads
                     for (int i = id; i < files.length; i += threads) {
                         countFile(files[i], counts[id]);
                     }
@@ -44,7 +42,6 @@ public class Task2 {
             for (Thread w : workers) w.join();
             double seconds = (System.nanoTime() - start) / 1e9;
 
-            // add the per-thread counters together
             long neg = 0, pos = 0, zero = 0;
             for (long[] c : counts) {
                 neg += c[0];
@@ -56,7 +53,7 @@ public class Task2 {
         }
     }
 
-    // reads the whole file in one operation, then parses and counts the numbers
+    // reads the whole file in one operation
     static void countFile(File file, long[] c) {
         byte[] data;
         try {
@@ -73,14 +70,14 @@ public class Task2 {
             } else if (b >= '0' && b <= '9') {
                 value = value * 10 + (b - '0');
                 inNumber = true;
-            } else if (inNumber) { // any other character ends the number
+            } else if (inNumber) {
                 add(c, minus, value);
                 value = 0;
                 minus = false;
                 inNumber = false;
             }
         }
-        if (inNumber) add(c, minus, value); // last line without a newline
+        if (inNumber) add(c, minus, value);
     }
 
     static void add(long[] c, boolean minus, int value) {
@@ -89,11 +86,11 @@ public class Task2 {
         else c[1]++;
     }
 
-    // background thread that records the highest heap usage
     static void startMemorySampler() {
         Thread sampler = new Thread(() -> {
             Runtime rt = Runtime.getRuntime();
             while (true) {
+                System.gc();
                 peak = Math.max(peak, rt.totalMemory() - rt.freeMemory());
                 try {
                     Thread.sleep(5);
